@@ -4,9 +4,24 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { cors: true });
+  const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
-  const allowedOrigins = configService.get('ALLOWED_ORIGINS')?.split(',');
+
+  // If ALLOWED_ORIGINS is not set, default to your Vercel frontend URL
+  const allowedOrigins = configService.get('ALLOWED_ORIGINS')?.split(',') || [
+    'https://quan-ly-sang-kien.vercel.app',
+    'http://localhost:3000',
+  ];
+
+  // Enable CORS with more specific configuration
+  app.enableCors({
+    origin: allowedOrigins,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+    allowedHeaders: 'Origin,X-Requested-With,Content-Type,Accept,Authorization',
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+  });
 
   // Global pipes for validation
   app.useGlobalPipes(
@@ -15,13 +30,6 @@ async function bootstrap() {
       transform: true,
     }),
   );
-
-  // Enable CORS - must be set before app.listen()
-  app.enableCors({
-    origin: [...allowedOrigins], // allowed domains
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
-  });
 
   // Start server
   await app.listen(configService.get('PORT'));
