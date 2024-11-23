@@ -83,4 +83,64 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-# server-management-initiatives
+
+# Initiative Management System (IMS)
+
+## Project Overview
+
+A comprehensive system for managing and evaluating initiatives at organizational level. This system streamlines the process of submitting, reviewing, and tracking innovative proposals.
+
+## System Requirements
+
+### Deployment Scope
+
+- Enterprise-level deployment capability
+- Supports concurrent users: TBD
+- Initiative batch processing: TBD
+
+### Technical Specifications
+
+#### Document Management
+
+- Maximum file size per attachment: TBD MB
+- Total storage limit per initiative: TBD MB
+- Document retention period: TBD
+- Storage optimization strategy: Under evaluation (External links vs. Direct uploads)
+
+#### Performance Requirements
+
+- System response time: TBD
+- Backup frequency: TBD
+- Integration capabilities: TBD
+
+### Business Process
+
+#### Initiative Review Workflow
+
+- Review process timeline: TBD
+- Minimum number of evaluators required: TBD
+- Score discrepancy handling: TBD
+- Post-submission edit capabilities: TBD
+
+### Support Structure
+
+- Technical support availability: TBD (Business hours/24-7)
+- Support channels: TBD (Email/Phone/Chat)
+- Response time SLA: TBD
+
+### Project Budget
+
+- Development budget: TBD
+- Monthly operational costs: TBD
+
+## Getting Started
+
+// ... existing setup instructions ...
+
+## Additional Resources
+
+// ... existing resources section ...
+
+## Questions?
+
+For detailed information about the system requirements or to contribute to the requirement gathering process, please contact the project team.
