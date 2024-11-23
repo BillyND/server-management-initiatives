@@ -26,7 +26,7 @@ export class User {
   isActive: boolean;
 
   @Column({ type: 'simple-array', default: ['user'] })
-  roles: string[];
+  role: string;
 
   @CreateDateColumn()
   createdAt: Date;

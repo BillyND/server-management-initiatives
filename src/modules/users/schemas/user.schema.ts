@@ -17,8 +17,8 @@ export class User {
   @Prop({ default: true })
   isActive: boolean;
 
-  @Prop({ default: ['user'] })
-  roles: string[];
+  @Prop({ default: 'user' })
+  role: string;
 
   @Prop()
   refreshToken?: string;

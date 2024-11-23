@@ -73,7 +73,7 @@ export class AuthService {
         { email },
         {
           secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
-          expiresIn: '10s',
+          expiresIn: '3s',
         },
       ),
       this.jwtService.signAsync(
@@ -132,5 +132,9 @@ export class AuthService {
     // Remove refresh token on logout
     await this.usersService.update(userId, { refreshToken: null });
     return true;
+  }
+
+  async verifyToken(token: string): Promise<any> {
+    return await this.jwtService.verifyAsync(token).catch(() => {});
   }
 }
