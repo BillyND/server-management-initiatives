@@ -35,8 +35,8 @@ export class UsersController {
   async create(@Body() createUserDto: CreateUserDto) {
     const user = await this.usersService.create(createUserDto);
     // Remove password
-    delete user.password;
+    const { password: _, ...userWithoutPassword } = user;
 
-    return user;
+    return userWithoutPassword;
   }
 }

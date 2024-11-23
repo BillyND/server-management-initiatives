@@ -9,7 +9,7 @@ export class User {
   email: string;
 
   @Prop({ required: true })
-  fullName: string;
+  name: string;
 
   @Prop({ required: true })
   password: string;
@@ -19,6 +19,9 @@ export class User {
 
   @Prop({ default: ['user'] })
   roles: string[];
+
+  @Prop()
+  refreshToken?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

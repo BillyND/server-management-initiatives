@@ -8,6 +8,7 @@ import { Model } from 'mongoose';
 import { User, UserDocument } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -41,12 +42,18 @@ export class UsersService {
   }
 
   async findByEmail(email: string): Promise<User> {
-    const user = await this.userModel.findOne({ email }).exec();
+    const user = await this.userModel.findOne({ email }).lean();
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
     return user;
+  }
+
+  async update(email: string, updateUserDto: UpdateUserDto) {
+    return this.userModel.findOneAndUpdate({ email }, updateUserDto, {
+      new: true,
+    });
   }
 }

@@ -16,7 +16,7 @@ export class User {
   email: string;
 
   @Column()
-  fullName: string;
+  name: string;
 
   @Column()
   @Exclude()
