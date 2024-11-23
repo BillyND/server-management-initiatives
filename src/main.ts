@@ -8,10 +8,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   // If ALLOWED_ORIGINS is not set, default to your Vercel frontend URL
-  const allowedOrigins = configService.get('ALLOWED_ORIGINS')?.split(',') || [
-    'https://quan-ly-sang-kien.vercel.app',
-    'http://localhost:3000',
-  ];
+  const allowedOrigins = configService.get('ALLOWED_ORIGINS')?.split(',');
 
   // Enable CORS with more specific configuration
   app.enableCors({
