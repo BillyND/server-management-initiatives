@@ -7,17 +7,16 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
-  // If ALLOWED_ORIGINS is not set, default to your Vercel frontend URL
-  const allowedOrigins = configService.get('ALLOWED_ORIGINS')?.split(',');
-
-  // Enable CORS with more specific configuration
+  // Enable CORS with custom options
   app.enableCors({
-    origin: allowedOrigins,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
-    allowedHeaders: 'Origin,X-Requested-With,Content-Type,Accept,Authorization',
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'https://quan-ly-sang-kien.vercel.app',
+    ],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Allowed methods
+    credentials: true, // Allow credentials (e.g., cookies)
+    allowedHeaders: 'Content-Type, Accept', // Allowed headers
   });
 
   // Global pipes for validation
