@@ -34,6 +34,8 @@ export async function fetchList(
   const isExportingData = searchParams['export'];
   const countResultOnly = searchParams['countResultOnly'];
 
+  console.log('searchParams', searchParams);
+
   // Prepare pagination
   const limit = Math.min(
     Number(searchParams.limit || ITEM_LIST_LIMITATION),

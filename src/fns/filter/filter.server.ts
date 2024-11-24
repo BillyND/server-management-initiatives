@@ -95,10 +95,15 @@ export async function getFiltersFromRequest(
   // Get query params
   const searchParams = request?.query || {};
 
+  // Get all filters
+  const allFilters = Array.isArray(searchParams.filter)
+    ? searchParams.filter
+    : searchParams.filter
+      ? [searchParams.filter]
+      : [];
+
   // Do not allow filtering by shop domain
-  const listFilters = (searchParams.filter || []).filter(
-    (filter) => !filter.includes('email'),
-  );
+  const listFilters = allFilters.filter((filter) => !filter.includes('email'));
 
   // Get list filters
   return parseFilterValues([`email|${email}`, ...listFilters]);
