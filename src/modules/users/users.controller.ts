@@ -15,6 +15,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AssignRolesDto } from './dto/assign-roles.dto';
 import { PermissionGuard } from '../auth/guards/permission.guard';
 import { RequirePermissions } from '../auth/decorators/permissions.decorator';
+import { PERMISSIONS } from '../permissions/permissions.constants';
 
 @Controller('users')
 export class UsersController {
@@ -47,7 +48,7 @@ export class UsersController {
 
   @Put(':email/roles')
   @UseGuards(JwtAuthGuard, PermissionGuard)
-  @RequirePermissions('users.manage')
+  @RequirePermissions(PERMISSIONS.USERS.MANAGE)
   async assignRoles(
     @Param('email') email: string,
     @Body() assignRolesDto: AssignRolesDto,

@@ -5,8 +5,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { InitiativesModule } from './modules/initiatives/initiatives.module';
-import { PermissionsModule } from './modules/permissions/permissions.module';
-import { RolesModule } from './modules/roles/roles.module';
+// import { PermissionsModule } from './modules/permissions/permissions.module';
+// import { RolesModule } from './modules/roles/roles.module';
 import { UsersModule } from './modules/users/users.module';
 
 @Module({
@@ -18,8 +18,8 @@ import { UsersModule } from './modules/users/users.module';
     UsersModule,
     AuthModule,
     InitiativesModule,
-    RolesModule,
-    PermissionsModule,
+    // RolesModule,
+    // PermissionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
