@@ -18,7 +18,7 @@ async function bootstrap() {
     origin: '*',
   });
 
-  await app.listen(8000);
+  await app.listen(3000);
 
   // const app = await NestFactory.create(AppModule);
   // const configService = app.get(ConfigService);
