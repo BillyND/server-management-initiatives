@@ -4,20 +4,20 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { cors: true });
   const configService = app.get(ConfigService);
   // const allowedOrigins = configService.get('ALLOWED_ORIGINS')?.split(',');
 
   // Enable CORS with custom options
-  app.enableCors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
-    allowedHeaders: '*', // Allow all headers
-    // exposedHeaders: ['Access-Control-Allow-Origin'],
-    credentials: true,
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
-  });
+  // app.enableCors({
+  //   origin: true, // Allow all origins
+  //   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
+  //   allowedHeaders: '*', // Allow all headers
+  //   // exposedHeaders: ['Access-Control-Allow-Origin'],
+  //   credentials: true,
+  //   preflightContinue: false,
+  //   optionsSuccessStatus: 204,
+  // });
 
   // Global pipes for validation
   app.useGlobalPipes(
