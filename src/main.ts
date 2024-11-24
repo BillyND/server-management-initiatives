@@ -3,17 +3,13 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
-// Bootstrap function for local development
-export default async function bootstrap() {
+async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
-
-  const allowedOrigins = configService.get('ALLOWED_ORIGINS')?.split(',') || [
-    'https://quan-ly-sang-kien.vercel.app',
-  ];
+  const allowedOrigins = configService.get('ALLOWED_ORIGINS')?.split(',');
 
   app.enableCors({
-    origin: allowedOrigins,
+    origin: allowedOrigins || ['https://quan-ly-sang-kien.vercel.app'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: ['Content-Type', 'Accept', 'Authorization'],
     credentials: true,
@@ -21,6 +17,7 @@ export default async function bootstrap() {
     optionsSuccessStatus: 204,
   });
 
+  // Global pipes for validation
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -28,8 +25,7 @@ export default async function bootstrap() {
     }),
   );
 
-  const port = configService.get('PORT') || 3000;
-  await app.listen(port);
+  // Start server
+  await app.listen(configService.get('PORT') || 3000);
 }
-
 bootstrap();
