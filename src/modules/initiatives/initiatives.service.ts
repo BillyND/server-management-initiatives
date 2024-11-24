@@ -7,8 +7,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Initiative, InitiativeDocument } from './schemas/initiative.schema';
 import { CreateInitiativeDto } from './dto/create-initiative.dto';
-import { InitiativeStatus } from 'src/enums/initiative.enum';
-import { fetchList } from 'src/fns/fetch.server';
+import { fetchList } from '../../../src/fns/fetch.server';
+import { InitiativeStatus } from '../../../src/enums/initiative.enum';
 
 @Injectable()
 export class InitiativesService {
