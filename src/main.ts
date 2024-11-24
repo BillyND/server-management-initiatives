@@ -3,10 +3,12 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
-async function bootstrap() {
+export default async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
   const allowedOrigins = configService.get('ALLOWED_ORIGINS')?.split(',');
+
+  console.log('===>check');
 
   app.enableCors({
     origin: allowedOrigins || ['https://quan-ly-sang-kien.vercel.app'],
@@ -26,7 +28,7 @@ async function bootstrap() {
   );
 
   // Start server
-  await app.listen(3001);
-  // await app.listen(configService.get('PORT') || 3000);
+  await app.listen(configService.get('PORT') || 8000);
 }
+
 bootstrap();
