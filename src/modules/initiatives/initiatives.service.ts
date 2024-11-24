@@ -1,14 +1,14 @@
 import {
-  Injectable,
   BadRequestException,
+  Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Initiative, InitiativeDocument } from './schemas/initiative.schema';
-import { CreateInitiativeDto } from './dto/create-initiative.dto';
+import { INITIATIVE_STATUS } from './initiatives.enum';
 import { fetchList } from '../../fns/fetch.server';
-import { InitiativeStatus } from '../../enums/initiative.enum';
+import { CreateInitiativeDto } from './dto/create-initiative.dto';
+import { Initiative, InitiativeDocument } from './schemas/initiative.schema';
 
 @Injectable()
 export class InitiativesService {
@@ -24,7 +24,7 @@ export class InitiativesService {
     try {
       const initiative = new this.initiativeModel({
         ...createInitiativeDto,
-        status: InitiativeStatus.PENDING,
+        status: INITIATIVE_STATUS.PENDING,
         email: user.email,
       });
 
@@ -90,7 +90,7 @@ export class InitiativesService {
       .findByIdAndUpdate(
         id,
         {
-          status: InitiativeStatus.PENDING,
+          status: INITIATIVE_STATUS.PENDING,
           submittedAt: new Date(),
           submittedBy: user.sub,
         },

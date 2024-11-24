@@ -6,10 +6,15 @@ import {
   UseGuards,
   Request,
   NotFoundException,
+  Put,
+  Param,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AssignRolesDto } from './dto/assign-roles.dto';
+import { PermissionGuard } from '../auth/guards/permission.guard';
+import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -21,9 +26,9 @@ export class UsersController {
     try {
       const user = await this.usersService.findByEmail(req.user.email);
       // Remove password
-      delete user.password;
+      const { password: _, ...userWithoutPassword } = user;
 
-      return user;
+      return userWithoutPassword;
     } catch (error: any) {
       throw new NotFoundException('User not found', error);
     }
@@ -38,5 +43,22 @@ export class UsersController {
     const { password: _, ...userWithoutPassword } = user;
 
     return userWithoutPassword;
+  }
+
+  @Put(':email/roles')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermissions('users.manage')
+  async assignRoles(
+    @Param('email') email: string,
+    @Body() assignRolesDto: AssignRolesDto,
+  ) {
+    return this.usersService.assignRolesToUser(email, assignRolesDto.roles);
+  }
+
+  @Get(':email/permissions')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermissions('users.read')
+  async getUserPermissions(@Param('email') email: string) {
+    return this.usersService.getUserPermissions(email);
   }
 }

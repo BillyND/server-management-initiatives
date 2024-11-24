@@ -1,18 +1,20 @@
 import {
-  Injectable,
   ConflictException,
+  Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { User, UserDocument } from './schemas/user.schema';
-import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
-import {
-  UpdateRefreshTokenUserDto,
-  UpdatePasswordUserDto,
-} from './dto/update-user.dto';
+import { Model } from 'mongoose';
+import { Role } from '../roles/schemas/role.schema';
+import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import {
+  UpdatePasswordUserDto,
+  UpdateRefreshTokenUserDto,
+} from './dto/update-user.dto';
+import { IUser } from './interfaces/user.interface';
+import { User, UserDocument } from './schemas/user.schema';
 
 @Injectable()
 export class UsersService {
@@ -45,14 +47,26 @@ export class UsersService {
     });
   }
 
-  async findByEmail(email: string): Promise<User> {
-    const user = await this.userModel.findOne({ email }).lean();
+  /**
+   * Find a user by email and return with mapped role names
+   * @param email User's email address
+   * @returns User object with roles mapped to role names
+   * @throws NotFoundException if user not found
+   */
+  async findByEmail(email: string): Promise<IUser> {
+    const user = await this.userModel
+      .findOne({ email })
+      .populate('roles')
+      .lean();
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(`User with email ${email} not found`);
     }
 
-    return user;
+    return {
+      ...user,
+      roles: user.roles.map((role: Role) => role.name) as string[],
+    };
   }
 
   async updateRefreshToken(
@@ -89,5 +103,68 @@ export class UsersService {
         new: true,
       })
       .lean();
+  }
+
+  async findByEmailWithRoles(email: string): Promise<User> {
+    const user = await this.userModel
+      .findOne({ email })
+      .populate({
+        path: 'roles',
+        populate: {
+          path: 'permissions',
+        },
+      })
+      .lean();
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
+
+  async assignRolesToUser(email: string, roles: Role[]): Promise<User> {
+    const user = await this.userModel
+      .findOneAndUpdate(
+        {
+          email,
+        },
+        { $set: { roles } },
+        { new: true },
+      )
+      .populate({
+        path: 'roles',
+        populate: {
+          path: 'permissions',
+        },
+      });
+
+    if (!user) {
+      throw new NotFoundException(`User #${email} not found`);
+    }
+
+    return user;
+  }
+
+  async getUserPermissions(email: string): Promise<string[]> {
+    const user = await this.userModel.findOne({ email }).populate({
+      path: 'roles',
+      populate: {
+        path: 'permissions',
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User #${email} not found`);
+    }
+
+    const permissions = new Set<string>();
+    user.roles.forEach((role) => {
+      role.permissions.forEach((permission) => {
+        permissions.add(permission.name);
+      });
+    });
+
+    return Array.from(permissions);
   }
 }

@@ -1,6 +1,6 @@
 import type { Model, PipelineStage } from 'mongoose';
 import mongoose from 'mongoose';
-import { ITEM_LIST_LIMITATION } from '../constants';
+import { ITEM_LIST_LIMITATION } from '../common/constants/limitations.constant';
 import { parseFiltersFromRequest } from './filter/filter.server';
 
 export type FetchItemResponse = null | {

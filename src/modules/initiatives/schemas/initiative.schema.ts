@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { InitiativeStatus } from '../../../enums/initiative.enum';
+import { INITIATIVE_STATUS } from '../initiatives.enum';
 
 export type InitiativeDocument = Initiative & Document;
 
@@ -37,10 +37,10 @@ export class Initiative {
 
   @Prop({
     type: String,
-    enum: InitiativeStatus,
-    default: InitiativeStatus.PENDING,
+    enum: INITIATIVE_STATUS,
+    default: INITIATIVE_STATUS.PENDING,
   })
-  status: InitiativeStatus;
+  status: INITIATIVE_STATUS;
 }
 
 export const InitiativeSchema = SchemaFactory.createForClass(Initiative);

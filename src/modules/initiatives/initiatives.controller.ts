@@ -11,15 +11,19 @@ import {
 import { InitiativesService } from './initiatives.service';
 import { CreateInitiativeDto } from './dto/create-initiative.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PermissionGuard } from '../auth/guards/permission.guard';
+import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { PERMISSIONS } from '../permissions/permissions.constants';
 
 @ApiTags('initiatives')
 @Controller('initiatives')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionGuard)
 export class InitiativesController {
   constructor(private readonly initiativesService: InitiativesService) {}
 
   @Post()
+  @RequirePermissions(PERMISSIONS.INITIATIVES.CREATE)
   @ApiOperation({ summary: 'Create new initiative' })
   @ApiResponse({ status: 201, description: 'Initiative created successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
@@ -31,6 +35,7 @@ export class InitiativesController {
   }
 
   @Get()
+  @RequirePermissions(PERMISSIONS.INITIATIVES.READ)
   @ApiOperation({ summary: 'Get all initiatives' })
   async findAll(@Request() req) {
     return await this.initiativesService.findAll(req, req.user);
@@ -43,6 +48,7 @@ export class InitiativesController {
   }
 
   @Put(':id')
+  @RequirePermissions(PERMISSIONS.INITIATIVES.UPDATE)
   @ApiOperation({ summary: 'Update initiative' })
   async update(
     @Request() req,

@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { MaxLength } from 'class-validator';
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
+import { Role } from '../../roles/schemas/role.schema';
 
 export type UserDocument = User & Document;
 
@@ -18,11 +19,8 @@ export class User {
   @Prop({ default: true })
   isActive: boolean;
 
-  @Prop({ default: 'user' })
-  role: string;
-
   @MaxLength(20, {
-    message: 'Phone number cannot be longer than 20 characters',
+    message: 'Phone number max length is 20',
   })
   @Prop({ default: '' })
   phone: string;
@@ -35,6 +33,9 @@ export class User {
 
   @Prop()
   refreshToken?: string;
+
+  @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Role' }] })
+  roles: Role[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
