@@ -14,9 +14,12 @@ async function bootstrap() {
       'http://localhost:5173',
       'https://quan-ly-sang-kien.vercel.app',
     ],
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Allowed methods
-    credentials: true, // Allow credentials (e.g., cookies)
-    allowedHeaders: 'Content-Type, Accept, Authorization', // Allowed headers
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
+    allowedHeaders: '*', // Allow all headers
+    exposedHeaders: ['Access-Control-Allow-Origin'],
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   });
 
   // Global pipes for validation
