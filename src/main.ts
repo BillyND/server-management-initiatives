@@ -42,7 +42,21 @@ async function bootstrap() {
 // Handler for Vercel serverless deployment
 export const handler = async (event: any, context: any) => {
   const app = await createApp();
+  const configService = app.get(ConfigService);
   await app.init();
+
+  const allowedOrigins = configService.get('ALLOWED_ORIGINS')?.split(',') || [
+    'https://quan-ly-sang-kien.vercel.app',
+  ];
+
+  app.enableCors({
+    origin: allowedOrigins,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: ['Content-Type', 'Accept', 'Authorization'],
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+  });
 
   const expressApp = app.getHttpAdapter().getInstance();
   return expressApp(event, context);
