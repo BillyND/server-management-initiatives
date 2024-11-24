@@ -6,12 +6,18 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Put,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
+import { ChangePasswordDto } from '../users/dto/change-password.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LoginDto } from '../users/dto/login.dto';
-import { AuthService } from './auth.service';
+import { UpdateProfileDto } from '../users/dto/update-profile.dto';
+import { User } from '../users/schemas/user.schema';
 import { UsersService } from '../users/users.service';
+import { AuthService } from './auth.service';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -82,5 +88,90 @@ export class AuthController {
       refreshTokenDto.email,
       refreshTokenDto.refreshToken,
     );
+  }
+
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async logout(@Headers() headers: Headers) {
+    const auth = headers['authorization'];
+    const token = auth.split(' ')[1];
+
+    try {
+      await this.authService.logout(token);
+      return {
+        success: true,
+        message: 'Logged out successfully',
+      };
+    } catch (error) {
+      throw new UnauthorizedException('Logout failed', error);
+    }
+  }
+
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async changePassword(
+    @Headers() headers: Headers,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    const auth = headers['authorization'];
+    const token = auth.split(' ')[1];
+
+    console.log(changePasswordDto);
+
+    try {
+      await this.authService.changePassword(
+        token,
+        changePasswordDto.currentPassword,
+        changePasswordDto.newPassword,
+      );
+
+      return {
+        success: true,
+        message: 'Password changed successfully',
+      };
+    } catch (error) {
+      throw new UnauthorizedException(error.message);
+    }
+  }
+
+  @Put('profile')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async updateProfile(
+    @Headers() headers: Headers,
+    @Body() updateProfileDto: UpdateProfileDto,
+  ): Promise<{
+    user: Omit<User, 'password' | 'refreshToken'>;
+    success: boolean;
+    message: string;
+  }> {
+    const auth = headers['authorization'];
+    const token = auth.split(' ')[1];
+
+    try {
+      const verifyData = await this.authService.verifyToken(token);
+      const { email } = verifyData;
+
+      const updatedUser = await this.usersService.updateProfile(email, {
+        ...updateProfileDto,
+      });
+
+      // Remove sensitive data from response
+      const {
+        password: _,
+        refreshToken: __,
+        ...userWithoutSensitiveData
+      } = updatedUser;
+
+      return {
+        user: userWithoutSensitiveData,
+        success: true,
+        message: 'Profile updated successfully',
+      };
+    } catch (error) {
+      throw new UnauthorizedException(error.message);
+    }
   }
 }

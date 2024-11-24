@@ -8,7 +8,11 @@ import { Model } from 'mongoose';
 import { User, UserDocument } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
-import { UpdateUserDto } from './dto/update-user.dto';
+import {
+  UpdateRefreshTokenUserDto,
+  UpdatePasswordUserDto,
+} from './dto/update-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class UsersService {
@@ -51,9 +55,39 @@ export class UsersService {
     return user;
   }
 
-  async update(email: string, updateUserDto: UpdateUserDto) {
-    return this.userModel.findOneAndUpdate({ email }, updateUserDto, {
-      new: true,
-    });
+  async updateRefreshToken(
+    email: string,
+    updateRefreshTokenUserDto: UpdateRefreshTokenUserDto,
+  ) {
+    return this.userModel.findOneAndUpdate(
+      { email },
+      { refreshToken: updateRefreshTokenUserDto.refreshToken },
+      { new: true },
+    );
+  }
+
+  async updatePassword(
+    email: string,
+    updatePasswordUserDto: UpdatePasswordUserDto,
+  ) {
+    return this.userModel.findOneAndUpdate(
+      { email },
+      { password: updatePasswordUserDto.password },
+      { new: true },
+    );
+  }
+
+  async updateProfile(
+    email: string,
+    updateProfileDto: UpdateProfileDto,
+  ): Promise<User> {
+    const user = await this.findByEmail(email);
+    Object.assign(user, updateProfileDto);
+
+    return await this.userModel
+      .findOneAndUpdate({ email }, user, {
+        new: true,
+      })
+      .lean();
   }
 }

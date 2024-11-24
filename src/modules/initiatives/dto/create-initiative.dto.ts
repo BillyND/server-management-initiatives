@@ -3,7 +3,7 @@ import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 export class CreateInitiativeDto {
   @IsNotEmpty()
   @IsString()
-  unit: string;
+  department: string;
 
   @IsNotEmpty()
   @IsString()

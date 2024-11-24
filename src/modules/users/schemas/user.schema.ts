@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { MaxLength } from 'class-validator';
 import { Document } from 'mongoose';
 
 export type UserDocument = User & Document;
@@ -19,6 +20,18 @@ export class User {
 
   @Prop({ default: 'user' })
   role: string;
+
+  @MaxLength(20, {
+    message: 'Phone number cannot be longer than 20 characters',
+  })
+  @Prop({ default: '' })
+  phone: string;
+
+  @Prop({ default: '' })
+  department: string;
+
+  @Prop({ default: '' })
+  position: string;
 
   @Prop()
   refreshToken?: string;

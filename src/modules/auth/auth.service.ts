@@ -47,7 +47,7 @@ export class AuthService {
 
     // Hash and store refresh token
     const hashedRefreshToken = await bcrypt.hash(tokens.refreshToken, 10);
-    await this.usersService.update(user.email, {
+    await this.usersService.updateRefreshToken(user.email, {
       refreshToken: hashedRefreshToken,
     });
 
@@ -73,7 +73,7 @@ export class AuthService {
         { email },
         {
           secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
-          expiresIn: '3s',
+          expiresIn: '1d',
         },
       ),
       this.jwtService.signAsync(
@@ -116,7 +116,7 @@ export class AuthService {
 
     // Update with new refresh token
     const hashedRefreshToken = await bcrypt.hash(tokens.refreshToken, 10);
-    await this.usersService.update(user.email, {
+    await this.usersService.updateRefreshToken(user.email, {
       refreshToken: hashedRefreshToken,
     });
 
@@ -128,13 +128,63 @@ export class AuthService {
    * @param userId - User's ID
    * @returns true if logout successful
    */
-  async logout(userId: string) {
-    // Remove refresh token on logout
-    await this.usersService.update(userId, { refreshToken: null });
-    return true;
+  async logout(token: string): Promise<void> {
+    try {
+      // Verify token
+      const decoded = await this.verifyToken(token);
+      if (!decoded) {
+        throw new UnauthorizedException('Invalid token');
+      }
+
+      // Find user and delete refresh token
+      const user = await this.usersService.findByEmail(decoded.email);
+      await this.usersService.updateRefreshToken(user.email, null);
+    } catch (error) {
+      throw new UnauthorizedException('Logout failed', error);
+    }
   }
 
   async verifyToken(token: string): Promise<any> {
     return await this.jwtService.verifyAsync(token).catch(() => {});
+  }
+
+  async changePassword(
+    token: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    // Verify token and get user email
+    const verifyData = await this.verifyToken(token);
+    if (!verifyData?.email) {
+      throw new UnauthorizedException('Invalid token');
+    }
+
+    // Get user from database
+    const user = await this.usersService.findByEmail(verifyData.email);
+
+    // Verify current password
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password,
+    );
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    // Check if new password is same as current password
+    const isSamePassword = await bcrypt.compare(newPassword, user.password);
+
+    if (isSamePassword) {
+      throw new UnauthorizedException(
+        'New password must be different from current password',
+      );
+    }
+
+    // Hash new password and update
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await this.usersService.updatePassword(user.email, {
+      password: hashedPassword,
+    });
   }
 }

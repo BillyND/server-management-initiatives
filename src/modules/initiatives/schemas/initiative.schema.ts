@@ -7,7 +7,7 @@ export type InitiativeDocument = Initiative & Document;
 @Schema({ timestamps: true })
 export class Initiative {
   @Prop({ required: true })
-  unit: string;
+  department: string;
 
   @Prop({ required: true })
   position: string;
