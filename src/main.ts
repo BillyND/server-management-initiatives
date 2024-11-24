@@ -6,17 +6,18 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+  const allowedOrigins = configService.get('ALLOWED_ORIGINS')?.split(',');
 
   // Enable CORS with custom options
   app.enableCors({
-    origin: [
+    origin: allowedOrigins || [
       'http://localhost:3000',
       'http://localhost:5173',
       'https://quan-ly-sang-kien.vercel.app',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
     allowedHeaders: '*', // Allow all headers
-    exposedHeaders: ['Access-Control-Allow-Origin'],
+    // exposedHeaders: ['Access-Control-Allow-Origin'],
     credentials: true,
     preflightContinue: false,
     optionsSuccessStatus: 204,
