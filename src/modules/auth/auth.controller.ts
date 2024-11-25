@@ -12,7 +12,6 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LoginDto } from '../users/dto/login.dto';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -32,14 +31,6 @@ export class AuthController {
   @Post('logout')
   async logout(@Request() req) {
     return this.authService.logout(req.user.email);
-  }
-
-  @UseGuards(JwtRefreshGuard)
-  @Get('refresh')
-  async refreshTokens(@Request() req) {
-    const user = req.user;
-    const refreshToken = req.get('Authorization').replace('Bearer', '').trim();
-    return this.authService.refreshTokens(user.email, refreshToken);
   }
 
   @UseGuards(JwtAuthGuard)
