@@ -1,39 +1,33 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
-  UseGuards,
-  Request,
   NotFoundException,
-  Put,
   Param,
+  Post,
+  Put,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { AssignRolesDto } from './dto/assign-roles.dto';
-import { PermissionGuard } from '../auth/guards/permission.guard';
 import { RequirePermissions } from '../auth/decorators/permissions.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PermissionGuard } from '../auth/guards/permission.guard';
+import { AssignRolesDto } from './dto/assign-roles.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UsersService } from './users.service';
+import { PERMISSIONS } from '../permissions/permissions.constants';
+import { User } from './schemas/user.schema';
+import { UserDocument } from './schemas/user.schema';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
-
-  @UseGuards(JwtAuthGuard)
-  @Get('profile')
-  async getProfile(@Request() req) {
-    try {
-      const user = await this.usersService.findByEmail(req.user.email);
-      // Remove password
-      const { password: _, ...userWithoutPassword } = user;
-
-      return userWithoutPassword;
-    } catch (error: any) {
-      throw new NotFoundException('User not found', error);
-    }
-  }
+  constructor(
+    private readonly usersService: UsersService,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+  ) {}
 
   // Create user
   @Post()
@@ -48,7 +42,7 @@ export class UsersController {
 
   @Put(':email/roles')
   @UseGuards(JwtAuthGuard, PermissionGuard)
-  @RequirePermissions('users.manage')
+  @RequirePermissions(PERMISSIONS.USERS.MANAGE)
   async assignRoles(
     @Param('email') email: string,
     @Body() assignRolesDto: AssignRolesDto,
@@ -58,7 +52,7 @@ export class UsersController {
 
   @Get(':email/permissions')
   @UseGuards(JwtAuthGuard, PermissionGuard)
-  @RequirePermissions('users.read')
+  @RequirePermissions(PERMISSIONS.USERS.READ)
   async getUserPermissions(@Param('email') email: string) {
     return this.usersService.getUserPermissions(email);
   }
@@ -81,5 +75,33 @@ export class UsersController {
     } catch (error: any) {
       throw new NotFoundException('User not found', error.message);
     }
+  }
+
+  @Get()
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermissions(PERMISSIONS.USERS.READ_ALL)
+  async findAll(@Request() req) {
+    return await this.usersService.findAll(req);
+  }
+
+  @Get(':email')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermissions(PERMISSIONS.USERS.READ)
+  async findOne(@Param('email') email: string) {
+    const user = await this.usersService.findByEmail(email);
+    // Remove password
+    const { password: _, refreshToken: __, ...userWithoutPassword } = user;
+    return userWithoutPassword;
+  }
+
+  @Put(':email')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermissions(PERMISSIONS.USERS.UPDATE)
+  async update(
+    @Param('email') email: string,
+    @Body() updateUserDto: UpdateProfileDto,
+  ) {
+    await this.userModel.updateOne({ email }, updateUserDto);
+    return this.usersService.findByEmail(email);
   }
 }

@@ -5,8 +5,10 @@ export const PERMISSIONS = {
   USERS: {
     CREATE: 'users.create',
     READ: 'users.read',
+    READ_ALL: 'users.read_all',
     UPDATE: 'users.update',
     DELETE: 'users.delete',
+    MANAGE: 'users.manage',
   },
   ROLES: {
     CREATE: 'roles.create',

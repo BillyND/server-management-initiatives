@@ -6,7 +6,8 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
-import { PermissionsService } from '../permissions/permissions.service';
+import { fetchList } from 'src/fns/fetch.server';
+import { Permission } from '../permissions/schemas/permission.schema';
 import { Role } from '../roles/schemas/role.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -16,14 +17,10 @@ import {
 } from './dto/update-user.dto';
 import { IUser } from './interfaces/user.interface';
 import { User, UserDocument } from './schemas/user.schema';
-import { Permission } from '../permissions/schemas/permission.schema';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    @InjectModel(User.name) private userModel: Model<UserDocument>,
-    private permissionsService: PermissionsService,
-  ) {}
+  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const existingUser = await this.userModel
@@ -178,5 +175,49 @@ export class UsersService {
     });
 
     return Array.from(permissions);
+  }
+
+  async findAll(req: Request) {
+    return await fetchList(
+      req,
+      this.userModel,
+      [
+        {
+          $lookup: {
+            from: 'roles',
+            localField: 'roles',
+            foreignField: '_id',
+            as: 'roles',
+          },
+        },
+        {
+          $lookup: {
+            from: 'permissions',
+            localField: 'roles.permissions',
+            foreignField: '_id',
+            as: 'permissions',
+          },
+        },
+        {
+          $addFields: {
+            roles: {
+              $map: {
+                input: '$roles',
+                as: 'role',
+                in: '$$role.name',
+              },
+            },
+            permissions: {
+              $map: {
+                input: '$permissions',
+                as: 'permission',
+                in: '$$permission.name',
+              },
+            },
+          },
+        },
+      ],
+      [],
+    );
   }
 }

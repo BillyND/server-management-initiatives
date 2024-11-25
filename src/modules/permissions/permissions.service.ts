@@ -128,6 +128,8 @@ export class PermissionsService {
       { name: PERMISSIONS.USERS.READ, description: 'Read users' },
       { name: PERMISSIONS.USERS.UPDATE, description: 'Update users' },
       { name: PERMISSIONS.USERS.DELETE, description: 'Delete users' },
+      { name: PERMISSIONS.USERS.READ_ALL, description: 'Read all users' },
+      { name: PERMISSIONS.USERS.MANAGE, description: 'Manage users' },
       { name: PERMISSIONS.ROLES.CREATE, description: 'Create roles' },
       { name: PERMISSIONS.ROLES.READ, description: 'Read roles' },
       { name: PERMISSIONS.ROLES.UPDATE, description: 'Update roles' },

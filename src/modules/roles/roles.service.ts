@@ -255,6 +255,7 @@ export class RolesService {
           PERMISSIONS.ROLES.READ,
           PERMISSIONS.ROLES.CREATE,
           PERMISSIONS.ROLES.UPDATE,
+          PERMISSIONS.ROLES.MANAGE,
         ].includes(p.name),
       )
       .map((p: any) => p?._id);

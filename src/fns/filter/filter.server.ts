@@ -90,7 +90,7 @@ export function parseFilterValues(queryParams: any[]): FilterValue[] {
 export async function getFiltersFromRequest(
   request: any,
 ): Promise<FilterValue[]> {
-  const { email } = (request as any)?.user || {};
+  // const { email } = (request as any)?.user || {};
 
   // Get query params
   const searchParams = request?.query || {};
@@ -102,11 +102,11 @@ export async function getFiltersFromRequest(
       ? [searchParams.filter]
       : [];
 
-  // Do not allow filtering by shop domain
-  const listFilters = allFilters.filter((filter) => !filter.includes('email'));
+  // // Do not allow filtering by email
+  // const listFilters = allFilters.filter((filter) => !filter.includes('email'));
 
   // Get list filters
-  return parseFilterValues([`email|${email}`, ...listFilters]);
+  return parseFilterValues([...allFilters]);
 }
 
 /**
