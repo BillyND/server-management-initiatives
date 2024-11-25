@@ -45,6 +45,6 @@ async function bootstrap() {
   }
 }
 
-if (process.env.NODE_ENV === 'development') {
-  bootstrap();
-}
+// if (process.env.NODE_ENV === 'development') {
+bootstrap();
+// }
