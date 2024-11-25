@@ -1,19 +1,18 @@
 import {
+  ConflictException,
   Injectable,
   NotFoundException,
-  ConflictException,
-  OnModuleInit,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Permission, PermissionDocument } from './schemas/permission.schema';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
 import { PERMISSIONS } from './permissions.constants';
-import { ConfigService } from '@nestjs/config';
+import { Permission, PermissionDocument } from './schemas/permission.schema';
 
 @Injectable()
-export class PermissionsService implements OnModuleInit {
+export class PermissionsService {
   constructor(
     @InjectModel(Permission.name)
     private permissionModel: Model<PermissionDocument>,
@@ -181,24 +180,6 @@ export class PermissionsService implements OnModuleInit {
       }
     } catch (error) {
       console.error('Error seeding permissions:', error);
-    }
-  }
-
-  // Auto seed default permissions when module is initialized
-  async onModuleInit() {
-    // Seed only in dev environment or when config flag is set
-    const shouldSeed =
-      this.configService.get<string>('SEED_PERMISSIONS') === 'true' ||
-      this.configService.get<string>('NODE_ENV') === 'development';
-
-    if (shouldSeed) {
-      try {
-        console.log('Seeding default permissions...');
-        await this.seedDefaultPermissions();
-        console.log('Default permissions seeded successfully');
-      } catch (error) {
-        console.error('Failed to seed default permissions:', error);
-      }
     }
   }
 }
