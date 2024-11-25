@@ -6,6 +6,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
+import { PermissionsService } from '../permissions/permissions.service';
 import { Role } from '../roles/schemas/role.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -15,10 +16,14 @@ import {
 } from './dto/update-user.dto';
 import { IUser } from './interfaces/user.interface';
 import { User, UserDocument } from './schemas/user.schema';
+import { Permission } from '../permissions/schemas/permission.schema';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private permissionsService: PermissionsService,
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const existingUser = await this.userModel
@@ -56,16 +61,29 @@ export class UsersService {
   async findByEmail(email: string): Promise<IUser> {
     const user = await this.userModel
       .findOne({ email })
-      .populate('roles')
+      .populate({
+        path: 'roles',
+        populate: {
+          path: 'permissions',
+          select: 'name',
+        },
+      })
       .lean();
 
     if (!user) {
       throw new NotFoundException(`User with email ${email} not found`);
     }
 
+    const permissions = user.roles.flatMap((r: any) =>
+      r?.permissions?.map((p: Permission) => p.name),
+    );
+
+    const roles = user.roles.map((role: Role) => role.name);
+
     return {
       ...user,
-      roles: user.roles.map((role: Role) => role.name) as string[],
+      roles,
+      permissions,
     };
   }
 
@@ -94,15 +112,9 @@ export class UsersService {
   async updateProfile(
     email: string,
     updateProfileDto: UpdateProfileDto,
-  ): Promise<User> {
-    const user = await this.findByEmail(email);
-    Object.assign(user, updateProfileDto);
-
-    return await this.userModel
-      .findOneAndUpdate({ email }, user, {
-        new: true,
-      })
-      .lean();
+  ): Promise<IUser> {
+    await this.userModel.updateOne({ email }, updateProfileDto);
+    return await this.findByEmail(email);
   }
 
   async findByEmailWithRoles(email: string): Promise<User> {

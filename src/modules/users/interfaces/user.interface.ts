@@ -5,6 +5,7 @@ export interface IUser {
   password: string;
   isActive: boolean;
   roles: string[];
+  permissions: string[];
   refreshToken?: string;
   phone: string;
   department: string;

@@ -15,6 +15,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AssignRolesDto } from './dto/assign-roles.dto';
 import { PermissionGuard } from '../auth/guards/permission.guard';
 import { RequirePermissions } from '../auth/decorators/permissions.decorator';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Controller('users')
 export class UsersController {
@@ -60,5 +61,25 @@ export class UsersController {
   @RequirePermissions('users.read')
   async getUserPermissions(@Param('email') email: string) {
     return this.usersService.getUserPermissions(email);
+  }
+
+  @Put('profile')
+  @UseGuards(JwtAuthGuard)
+  async updateProfile(
+    @Request() req,
+    @Body() updateProfileDto: UpdateProfileDto,
+  ) {
+    try {
+      const updatedUser = await this.usersService.updateProfile(
+        req.user.email,
+        updateProfileDto,
+      );
+
+      // Remove sensitive data
+      const { password: _, ...userWithoutPassword } = updatedUser;
+      return userWithoutPassword;
+    } catch (error: any) {
+      throw new NotFoundException('User not found', error.message);
+    }
   }
 }
