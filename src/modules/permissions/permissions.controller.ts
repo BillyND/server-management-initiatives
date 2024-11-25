@@ -6,16 +6,16 @@ import {
   Param,
   Post,
   Put,
-  UseGuards,
+  // UseGuards,
 } from '@nestjs/common';
 import { RequirePermissions } from '../auth/decorators/permissions.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+// import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
 import { PermissionsService } from './permissions.service';
 
 @Controller('permissions')
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
 export class PermissionsController {
   constructor(private readonly permissionsService: PermissionsService) {}
 
