@@ -275,75 +275,73 @@ export class RolesService {
       this.configService.get<string>('SEED_PERMISSIONS') === 'true' ||
       this.configService.get<string>('NODE_ENV') === 'development';
 
-    if (!shouldSeed) {
-      return;
-    }
+    if (shouldSeed) {
+      // First, fetch all permissions from the database
+      const allPermissions = await this.permissionsService.findAll();
 
-    // First, fetch all permissions from the database
-    const allPermissions = await this.permissionsService.findAll();
+      // Create permission maps for each role
+      const superAdminPerms = allPermissions.map((p: any) => p?._id);
+      const adminPerms = allPermissions
+        .filter((p: any) =>
+          [
+            PERMISSIONS.USERS.CREATE,
+            PERMISSIONS.USERS.READ,
+            PERMISSIONS.USERS.UPDATE,
+            PERMISSIONS.USERS.DELETE,
+            PERMISSIONS.ROLES.READ,
+            PERMISSIONS.ROLES.CREATE,
+            PERMISSIONS.ROLES.UPDATE,
+          ].includes(p.name),
+        )
+        .map((p: any) => p?._id);
 
-    // Create permission maps for each role
-    const superAdminPerms = allPermissions.map((p: any) => p?._id);
-    const adminPerms = allPermissions
-      .filter((p: any) =>
-        [
-          PERMISSIONS.USERS.CREATE,
-          PERMISSIONS.USERS.READ,
-          PERMISSIONS.USERS.UPDATE,
-          PERMISSIONS.USERS.DELETE,
-          PERMISSIONS.ROLES.READ,
-          PERMISSIONS.ROLES.CREATE,
-          PERMISSIONS.ROLES.UPDATE,
-        ].includes(p.name),
-      )
-      .map((p: any) => p?._id);
+      const managerPerms = allPermissions
+        .filter((p: any) =>
+          [PERMISSIONS.USERS.READ, PERMISSIONS.USERS.UPDATE].includes(p.name),
+        )
+        .map((p: any) => p?._id);
 
-    const managerPerms = allPermissions
-      .filter((p: any) =>
-        [PERMISSIONS.USERS.READ, PERMISSIONS.USERS.UPDATE].includes(p.name),
-      )
-      .map((p: any) => p?._id);
+      const userPerms = allPermissions
+        .filter((p: any) =>
+          [
+            PERMISSIONS.USERS.READ,
+            PERMISSIONS.PROFILE.UPDATE,
+            PERMISSIONS.INITIATIVES.READ,
+            PERMISSIONS.INITIATIVES.CREATE,
+          ].includes(p.name),
+        )
+        .map((p: any) => p?._id);
 
-    const userPerms = allPermissions
-      .filter((p: any) =>
-        [
-          PERMISSIONS.USERS.READ,
-          PERMISSIONS.PROFILE.UPDATE,
-          PERMISSIONS.INITIATIVES.READ,
-          PERMISSIONS.INITIATIVES.CREATE,
-        ].includes(p.name),
-      )
-      .map((p: any) => p?._id);
+      const defaultRoles = [
+        {
+          name: ROLES.SUPER_ADMIN,
+          description: 'Super Administrator with full access',
+          permissions: superAdminPerms,
+        },
+        {
+          name: ROLES.ADMIN,
+          description: 'Administrator with management access',
+          permissions: adminPerms,
+        },
+        {
+          name: ROLES.MANAGER,
+          description: 'Manager with department management access',
+          permissions: managerPerms,
+        },
+        {
+          name: ROLES.USER,
+          description: 'Regular user with basic access',
+          permissions: userPerms,
+        },
+      ];
 
-    const defaultRoles = [
-      {
-        name: ROLES.SUPER_ADMIN,
-        description: 'Super Administrator with full access',
-        permissions: superAdminPerms,
-      },
-      {
-        name: ROLES.ADMIN,
-        description: 'Administrator with management access',
-        permissions: adminPerms,
-      },
-      {
-        name: ROLES.MANAGER,
-        description: 'Manager with department management access',
-        permissions: managerPerms,
-      },
-      {
-        name: ROLES.USER,
-        description: 'Regular user with basic access',
-        permissions: userPerms,
-      },
-    ];
-
-    try {
-      console.log('Seeding default roles...');
-      await this.seedDefaultRoles(defaultRoles);
-      console.log('Default roles seeded successfully');
-    } catch (error) {
-      console.error('Failed to seed default roles:', error);
+      try {
+        console.log('Seeding default roles...');
+        await this.seedDefaultRoles(defaultRoles);
+        console.log('Default roles seeded successfully');
+      } catch (error) {
+        console.error('Failed to seed default roles:', error);
+      }
     }
   }
 }
