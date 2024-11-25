@@ -105,15 +105,13 @@ export class PermissionsService {
     return createdPermissions;
   }
 
-  async seedDefaultPermissions(
-    defaultPermissions: CreatePermissionDto[],
-  ): Promise<void> {
+  async seedDefaultPermissions(permissions: CreatePermissionDto[]) {
     try {
-      for (const permission of defaultPermissions) {
+      for (const permission of permissions) {
         await this.permissionModel.findOneAndUpdate(
           { name: permission.name },
           permission,
-          { upsert: true, new: true },
+          { upsert: true },
         );
       }
     } catch (error) {
