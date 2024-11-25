@@ -52,9 +52,4 @@ export class PermissionsController {
   remove(@Param('id') id: string) {
     return this.permissionsService.remove(id);
   }
-
-  @Post('seed')
-  seedDefaultPermissions() {
-    return this.permissionsService.seedDefaultPermissions();
-  }
 }
