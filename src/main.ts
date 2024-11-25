@@ -36,12 +36,12 @@ async function bootstrap() {
 
   console.log('shouldSeed', shouldSeed);
 
-  if (shouldSeed) {
-    const permissionsService = app.get(PermissionsService);
-    await permissionsService.seedDefaultPermissions();
+  // if (shouldSeed) {
+  const permissionsService = app.get(PermissionsService);
+  await permissionsService.seedDefaultPermissions();
 
-    const rolesService = app.get(RolesService);
-    await rolesService.seedDefaultRoles();
-  }
+  const rolesService = app.get(RolesService);
+  await rolesService.seedDefaultRoles();
+  // }
 }
 bootstrap();
