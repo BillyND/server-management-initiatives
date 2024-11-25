@@ -13,7 +13,9 @@ import { PermissionsService } from '../permissions/permissions.service';
 import { AssignPermissionsDto } from './dto/assign-permissions.dto';
 import { ROLES } from './roles.enum';
 import { PERMISSIONS } from '../permissions/permissions.constants';
-import { ConfigService } from '@nestjs/config';
+// import { ROLES } from './roles.enum';
+// import { PERMISSIONS } from '../permissions/permissions.constants';
+// import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class RolesService {
@@ -21,7 +23,7 @@ export class RolesService {
     @InjectModel(Role.name)
     private roleModel: Model<RoleDocument>,
     private permissionsService: PermissionsService,
-    private configService: ConfigService,
+    // private configService: ConfigService,
   ) {}
 
   /**
@@ -271,9 +273,10 @@ export class RolesService {
 
   async onModuleInit() {
     // Seed only in dev environment or when config flag is set
-    const shouldSeed =
-      this.configService.get<string>('SEED_PERMISSIONS') === 'true' ||
-      this.configService.get<string>('NODE_ENV') === 'development';
+    const shouldSeed = true;
+    // const shouldSeed =
+    //   this.configService.get<string>('SEED_PERMISSIONS') === 'true' ||
+    //   this.configService.get<string>('NODE_ENV') === 'development';
 
     if (shouldSeed) {
       // First, fetch all permissions from the database
