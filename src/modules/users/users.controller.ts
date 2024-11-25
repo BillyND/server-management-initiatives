@@ -57,6 +57,23 @@ export class UsersController {
     return this.usersService.getUserPermissions(email);
   }
 
+  @Get()
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermissions(PERMISSIONS.USERS.READ_ALL)
+  async findAll(@Request() req) {
+    return await this.usersService.findAll(req, req.user.email);
+  }
+
+  @Get(':email')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermissions(PERMISSIONS.USERS.READ)
+  async findOne(@Param('email') email: string) {
+    const user = await this.usersService.findByEmail(email);
+    // Remove password
+    const { password: _, refreshToken: __, ...userWithoutPassword } = user;
+    return userWithoutPassword;
+  }
+
   @Put('profile')
   @UseGuards(JwtAuthGuard)
   async updateProfile(
@@ -77,27 +94,10 @@ export class UsersController {
     }
   }
 
-  @Get()
-  @UseGuards(JwtAuthGuard, PermissionGuard)
-  @RequirePermissions(PERMISSIONS.USERS.READ_ALL)
-  async findAll(@Request() req) {
-    return await this.usersService.findAll(req, req.user.email);
-  }
-
-  @Get(':email')
-  @UseGuards(JwtAuthGuard, PermissionGuard)
-  @RequirePermissions(PERMISSIONS.USERS.READ)
-  async findOne(@Param('email') email: string) {
-    const user = await this.usersService.findByEmail(email);
-    // Remove password
-    const { password: _, refreshToken: __, ...userWithoutPassword } = user;
-    return userWithoutPassword;
-  }
-
   @Put(':email')
   @UseGuards(JwtAuthGuard, PermissionGuard)
   @RequirePermissions(PERMISSIONS.USERS.UPDATE)
-  async update(
+  async updateUser(
     @Param('email') email: string,
     @Body() updateUserDto: UpdateProfileDto,
   ) {
