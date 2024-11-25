@@ -8,6 +8,7 @@ import { Model } from 'mongoose';
 import { Permission, PermissionDocument } from './schemas/permission.schema';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
+import { PERMISSIONS } from './permissions.constants';
 
 @Injectable()
 export class PermissionsService {
@@ -105,9 +106,58 @@ export class PermissionsService {
     return createdPermissions;
   }
 
-  async seedDefaultPermissions(permissions: CreatePermissionDto[]) {
+  async seedDefaultPermissions() {
+    const defaultPermissions = [
+      { name: PERMISSIONS.USERS.CREATE, description: 'Create users' },
+      { name: PERMISSIONS.USERS.READ, description: 'Read users' },
+      { name: PERMISSIONS.USERS.UPDATE, description: 'Update users' },
+      { name: PERMISSIONS.USERS.DELETE, description: 'Delete users' },
+      { name: PERMISSIONS.ROLES.CREATE, description: 'Create roles' },
+      { name: PERMISSIONS.ROLES.READ, description: 'Read roles' },
+      { name: PERMISSIONS.ROLES.UPDATE, description: 'Update roles' },
+      { name: PERMISSIONS.ROLES.DELETE, description: 'Delete roles' },
+      {
+        name: PERMISSIONS.ROLES.MANAGE,
+        description: 'Manage role permissions',
+      },
+      {
+        name: PERMISSIONS.PERMISSIONS.CREATE,
+        description: 'Create permissions',
+      },
+      { name: PERMISSIONS.PERMISSIONS.READ, description: 'Read permissions' },
+      {
+        name: PERMISSIONS.PERMISSIONS.UPDATE,
+        description: 'Update permissions',
+      },
+      {
+        name: PERMISSIONS.PERMISSIONS.DELETE,
+        description: 'Delete permissions',
+      },
+      {
+        name: PERMISSIONS.INITIATIVES.CREATE,
+        description: 'Create initiatives',
+      },
+      { name: PERMISSIONS.INITIATIVES.READ, description: 'Read initiatives' },
+      {
+        name: PERMISSIONS.INITIATIVES.UPDATE,
+        description: 'Update initiatives',
+      },
+      {
+        name: PERMISSIONS.INITIATIVES.DELETE,
+        description: 'Delete initiatives',
+      },
+      {
+        name: PERMISSIONS.INITIATIVES.APPROVE,
+        description: 'Approve initiatives',
+      },
+      {
+        name: PERMISSIONS.INITIATIVES.REJECT,
+        description: 'Reject initiatives',
+      },
+    ];
+
     try {
-      for (const permission of permissions) {
+      for (const permission of defaultPermissions) {
         await this.permissionModel.findOneAndUpdate(
           { name: permission.name },
           permission,
