@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  OnModuleInit,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -12,7 +13,7 @@ import { PERMISSIONS } from './permissions.constants';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class PermissionsService {
+export class PermissionsService implements OnModuleInit {
   constructor(
     @InjectModel(Permission.name)
     private permissionModel: Model<PermissionDocument>,
@@ -108,6 +109,18 @@ export class PermissionsService {
     return createdPermissions;
   }
 
+  async toggleActive(id: string, isActive: boolean): Promise<Permission> {
+    const permission = await this.permissionModel
+      .findByIdAndUpdate(id, { isActive }, { new: true })
+      .exec();
+
+    if (!permission) {
+      throw new NotFoundException(`Permission #${id} not found`);
+    }
+
+    return permission;
+  }
+
   async seedDefaultPermissions() {
     const defaultPermissions = [
       { name: PERMISSIONS.USERS.CREATE, description: 'Create users' },
@@ -170,18 +183,6 @@ export class PermissionsService {
       console.error('Error seeding permissions:', error);
       throw error;
     }
-  }
-
-  async toggleActive(id: string, isActive: boolean): Promise<Permission> {
-    const permission = await this.permissionModel
-      .findByIdAndUpdate(id, { isActive }, { new: true })
-      .exec();
-
-    if (!permission) {
-      throw new NotFoundException(`Permission #${id} not found`);
-    }
-
-    return permission;
   }
 
   // Auto seed default permissions when module is initialized
