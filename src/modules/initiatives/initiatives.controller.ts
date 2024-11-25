@@ -11,14 +11,15 @@ import {
 import { InitiativesService } from './initiatives.service';
 import { CreateInitiativeDto } from './dto/create-initiative.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { PermissionGuard } from '../auth/guards/permission.guard';
+// import { PermissionGuard } from '../auth/guards/permission.guard';
 import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PERMISSIONS } from '../permissions/permissions.constants';
 
 @ApiTags('initiatives')
 @Controller('initiatives')
-@UseGuards(JwtAuthGuard, PermissionGuard)
+@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard, PermissionGuard)
 export class InitiativesController {
   constructor(private readonly initiativesService: InitiativesService) {}
 
