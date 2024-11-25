@@ -2,11 +2,11 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
-import { RolesService } from '../roles/roles.service';
+// import { RolesService } from '../roles/roles.service';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LoginDto } from '../users/dto/login.dto';
-import { DEFAULT_ROLE } from '../roles/roles.enum';
+// import { DEFAULT_ROLE } from '../roles/roles.enum';
 
 @Injectable()
 export class AuthService {
@@ -14,7 +14,7 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private configService: ConfigService,
-    private rolesService: RolesService,
+    // private rolesService: RolesService,
   ) {}
 
   async validateUser(email: string, password: string): Promise<any> {
@@ -54,7 +54,8 @@ export class AuthService {
   async register(createUserDto: CreateUserDto) {
     try {
       const user = await this.usersService.create(createUserDto);
-      const defaultRole = await this.rolesService.findByName(DEFAULT_ROLE);
+      const defaultRole: any = [];
+      // const defaultRole = await this.rolesService.findByName(DEFAULT_ROLE);
       await this.usersService.assignRolesToUser(user.email, [defaultRole]);
 
       const tokens = await this.getTokens(user.email);
