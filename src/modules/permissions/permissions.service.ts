@@ -108,7 +108,7 @@ export class PermissionsService {
     return createdPermissions;
   }
 
-  async seedDefaultPermissions(defaultPermissions: CreatePermissionDto[]) {
+  async seedDefaultPermissions(defaultPermissions: any[]) {
     try {
       for (const permission of defaultPermissions) {
         await this.permissionModel.findOneAndUpdate(
