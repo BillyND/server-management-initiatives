@@ -108,7 +108,44 @@ export class PermissionsService {
     return createdPermissions;
   }
 
-  async seedDefaultPermissions() {
+  async seedDefaultPermissions(defaultPermissions: CreatePermissionDto[]) {
+    try {
+      for (const permission of defaultPermissions) {
+        await this.permissionModel.findOneAndUpdate(
+          { name: permission.name },
+          permission,
+          { upsert: true },
+        );
+      }
+    } catch (error) {
+      console.error('Error seeding permissions:', error);
+      throw error;
+    }
+  }
+
+  async toggleActive(id: string, isActive: boolean): Promise<Permission> {
+    const permission = await this.permissionModel
+      .findByIdAndUpdate(id, { isActive }, { new: true })
+      .exec();
+
+    if (!permission) {
+      throw new NotFoundException(`Permission #${id} not found`);
+    }
+
+    return permission;
+  }
+
+  // Auto seed default permissions when module is initialized
+  async onModuleInit() {
+    // Seed only in dev environment or when config flag is set
+    const shouldSeed =
+      this.configService.get<string>('SEED_PERMISSIONS') === 'true' ||
+      this.configService.get<string>('NODE_ENV') === 'development';
+
+    if (!shouldSeed) {
+      return;
+    }
+
     const defaultPermissions = [
       { name: PERMISSIONS.USERS.CREATE, description: 'Create users' },
       { name: PERMISSIONS.USERS.READ, description: 'Read users' },
@@ -159,46 +196,11 @@ export class PermissionsService {
     ];
 
     try {
-      for (const permission of defaultPermissions) {
-        await this.permissionModel.findOneAndUpdate(
-          { name: permission.name },
-          permission,
-          { upsert: true },
-        );
-      }
+      console.log('Seeding default permissions...');
+      await this.seedDefaultPermissions(defaultPermissions);
+      console.log('Default permissions seeded successfully');
     } catch (error) {
-      console.error('Error seeding permissions:', error);
-      throw error;
-    }
-  }
-
-  async toggleActive(id: string, isActive: boolean): Promise<Permission> {
-    const permission = await this.permissionModel
-      .findByIdAndUpdate(id, { isActive }, { new: true })
-      .exec();
-
-    if (!permission) {
-      throw new NotFoundException(`Permission #${id} not found`);
-    }
-
-    return permission;
-  }
-
-  // Auto seed default permissions when module is initialized
-  async onModuleInit() {
-    // Seed only in dev environment or when config flag is set
-    const shouldSeed =
-      this.configService.get<string>('SEED_PERMISSIONS') === 'true' ||
-      this.configService.get<string>('NODE_ENV') === 'development';
-
-    if (shouldSeed) {
-      try {
-        console.log('Seeding default permissions...');
-        await this.seedDefaultPermissions();
-        console.log('Default permissions seeded successfully');
-      } catch (error) {
-        console.error('Failed to seed default permissions:', error);
-      }
+      console.error('Failed to seed default permissions:', error);
     }
   }
 }

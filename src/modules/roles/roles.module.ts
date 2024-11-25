@@ -4,7 +4,6 @@ import { PermissionsModule } from '../permissions/permissions.module';
 import { RolesController } from './roles.controller';
 import { RolesService } from './roles.service';
 import { Role, RoleSchema } from './schemas/role.schema';
-import { RolesSeeder } from './roles.seed';
 
 @Module({
   imports: [
@@ -12,7 +11,7 @@ import { RolesSeeder } from './roles.seed';
     PermissionsModule,
   ],
   controllers: [RolesController],
-  providers: [RolesService, RolesSeeder],
+  providers: [RolesService],
   exports: [RolesService],
 })
 export class RolesModule {}
