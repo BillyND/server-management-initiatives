@@ -23,7 +23,6 @@ export class RolesService {
     @InjectModel(Role.name)
     private roleModel: Model<RoleDocument>,
     private permissionsService: PermissionsService,
-    // private configService: ConfigService,
   ) {}
 
   /**
@@ -239,7 +238,67 @@ export class RolesService {
   /**
    * Seed default roles
    */
-  async seedDefaultRoles(defaultRoles: CreateRoleDto[]): Promise<void> {
+  async seedDefaultRoles(): Promise<void> {
+    console.log('Seeding default roles...');
+    // First, fetch all permissions from the database
+    const allPermissions = await this.permissionsService.findAll();
+
+    // Create permission maps for each role
+    const superAdminPerms = allPermissions.map((p: any) => p?._id);
+    const adminPerms = allPermissions
+      .filter((p: any) =>
+        [
+          PERMISSIONS.USERS.CREATE,
+          PERMISSIONS.USERS.READ,
+          PERMISSIONS.USERS.UPDATE,
+          PERMISSIONS.USERS.DELETE,
+          PERMISSIONS.ROLES.READ,
+          PERMISSIONS.ROLES.CREATE,
+          PERMISSIONS.ROLES.UPDATE,
+        ].includes(p.name),
+      )
+      .map((p: any) => p?._id);
+
+    const managerPerms = allPermissions
+      .filter((p: any) =>
+        [PERMISSIONS.USERS.READ, PERMISSIONS.USERS.UPDATE].includes(p.name),
+      )
+      .map((p: any) => p?._id);
+
+    const userPerms = allPermissions
+      .filter((p: any) =>
+        [
+          PERMISSIONS.USERS.READ,
+          PERMISSIONS.PROFILE.UPDATE,
+          PERMISSIONS.INITIATIVES.READ,
+          PERMISSIONS.INITIATIVES.CREATE,
+        ].includes(p.name),
+      )
+      .map((p: any) => p?._id);
+
+    const defaultRoles = [
+      {
+        name: ROLES.SUPER_ADMIN,
+        description: 'Super Administrator with full access',
+        permissions: superAdminPerms,
+      },
+      {
+        name: ROLES.ADMIN,
+        description: 'Administrator with management access',
+        permissions: adminPerms,
+      },
+      {
+        name: ROLES.MANAGER,
+        description: 'Manager with department management access',
+        permissions: managerPerms,
+      },
+      {
+        name: ROLES.USER,
+        description: 'Regular user with basic access',
+        permissions: userPerms,
+      },
+    ];
+
     try {
       for (const role of defaultRoles) {
         await this.roleModel.findOneAndUpdate({ name: role.name }, role, {
@@ -251,6 +310,8 @@ export class RolesService {
       console.error('Error seeding roles:', error);
       throw error;
     }
+
+    console.log('Default roles seeded successfully');
   }
 
   /**
@@ -268,83 +329,6 @@ export class RolesService {
         throw error;
       }
       throw new BadRequestException('Invalid permission IDs provided');
-    }
-  }
-
-  async onModuleInit() {
-    // Seed only in dev environment or when config flag is set
-    const shouldSeed = true;
-    // const shouldSeed =
-    //   this.configService.get<string>('SEED_PERMISSIONS') === 'true' ||
-    //   this.configService.get<string>('NODE_ENV') === 'development';
-
-    if (shouldSeed) {
-      // First, fetch all permissions from the database
-      const allPermissions = await this.permissionsService.findAll();
-
-      // Create permission maps for each role
-      const superAdminPerms = allPermissions.map((p: any) => p?._id);
-      const adminPerms = allPermissions
-        .filter((p: any) =>
-          [
-            PERMISSIONS.USERS.CREATE,
-            PERMISSIONS.USERS.READ,
-            PERMISSIONS.USERS.UPDATE,
-            PERMISSIONS.USERS.DELETE,
-            PERMISSIONS.ROLES.READ,
-            PERMISSIONS.ROLES.CREATE,
-            PERMISSIONS.ROLES.UPDATE,
-          ].includes(p.name),
-        )
-        .map((p: any) => p?._id);
-
-      const managerPerms = allPermissions
-        .filter((p: any) =>
-          [PERMISSIONS.USERS.READ, PERMISSIONS.USERS.UPDATE].includes(p.name),
-        )
-        .map((p: any) => p?._id);
-
-      const userPerms = allPermissions
-        .filter((p: any) =>
-          [
-            PERMISSIONS.USERS.READ,
-            PERMISSIONS.PROFILE.UPDATE,
-            PERMISSIONS.INITIATIVES.READ,
-            PERMISSIONS.INITIATIVES.CREATE,
-          ].includes(p.name),
-        )
-        .map((p: any) => p?._id);
-
-      const defaultRoles = [
-        {
-          name: ROLES.SUPER_ADMIN,
-          description: 'Super Administrator with full access',
-          permissions: superAdminPerms,
-        },
-        {
-          name: ROLES.ADMIN,
-          description: 'Administrator with management access',
-          permissions: adminPerms,
-        },
-        {
-          name: ROLES.MANAGER,
-          description: 'Manager with department management access',
-          permissions: managerPerms,
-        },
-        {
-          name: ROLES.USER,
-          description: 'Regular user with basic access',
-          permissions: userPerms,
-        },
-      ];
-
-      try {
-        console.log('Seeding default roles...');
-        await this.seedDefaultRoles(defaultRoles);
-        console.log('Default roles seeded successfully');
-      } catch (error) {
-        console.error('Failed to seed default roles:', error);
-      }
     }
   }
 }

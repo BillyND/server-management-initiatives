@@ -121,6 +121,8 @@ export class PermissionsService {
   }
 
   async seedDefaultPermissions() {
+    console.log('Seeding default permissions...');
+
     const defaultPermissions = [
       { name: PERMISSIONS.USERS.CREATE, description: 'Create users' },
       { name: PERMISSIONS.USERS.READ, description: 'Read users' },
@@ -181,5 +183,7 @@ export class PermissionsService {
     } catch (error) {
       console.error('Error seeding permissions:', error);
     }
+
+    console.log('Default permissions seeded successfully');
   }
 }
