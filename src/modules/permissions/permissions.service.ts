@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  OnModuleInit,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -12,7 +13,7 @@ import { PERMISSIONS } from './permissions.constants';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class PermissionsService {
+export class PermissionsService implements OnModuleInit {
   constructor(
     @InjectModel(Permission.name)
     private permissionModel: Model<PermissionDocument>,
