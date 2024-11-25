@@ -177,11 +177,16 @@ export class UsersService {
     return Array.from(permissions);
   }
 
-  async findAll(req: Request) {
+  async findAll(req: Request, email?: string) {
     return await fetchList(
       req,
       this.userModel,
       [
+        {
+          $match: {
+            email: { $ne: email },
+          },
+        },
         {
           $lookup: {
             from: 'roles',

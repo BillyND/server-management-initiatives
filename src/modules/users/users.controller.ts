@@ -81,7 +81,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard, PermissionGuard)
   @RequirePermissions(PERMISSIONS.USERS.READ_ALL)
   async findAll(@Request() req) {
-    return await this.usersService.findAll(req);
+    return await this.usersService.findAll(req, req.user.email);
   }
 
   @Get(':email')
