@@ -56,6 +56,12 @@ export class PermissionsSeeder implements OnModuleInit {
       },
     ];
 
-    await this.permissionsService.seedDefaultPermissions(defaultPermissions);
+    try {
+      // Add try-catch to handle errors
+      await this.permissionsService.seedDefaultPermissions(defaultPermissions);
+    } catch (error) {
+      console.error('Error seeding permissions:', error);
+      // Can throw error or handle according to your logic
+    }
   }
 }
