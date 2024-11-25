@@ -9,14 +9,14 @@ import { Permission, PermissionDocument } from './schemas/permission.schema';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
 import { PERMISSIONS } from './permissions.constants';
-import { ConfigService } from '@nestjs/config';
+// import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class PermissionsService {
   constructor(
     @InjectModel(Permission.name)
     private permissionModel: Model<PermissionDocument>,
-    private configService: ConfigService,
+    // private configService: ConfigService,
   ) {}
 
   async create(createPermissionDto: CreatePermissionDto): Promise<Permission> {
@@ -138,9 +138,10 @@ export class PermissionsService {
   // Auto seed default permissions when module is initialized
   async onModuleInit() {
     // Seed only in dev environment or when config flag is set
-    const shouldSeed =
-      this.configService.get<string>('SEED_PERMISSIONS') === 'true' ||
-      this.configService.get<string>('NODE_ENV') === 'development';
+    const shouldSeed = true;
+    // const shouldSeed =
+    //   this.configService.get<string>('SEED_PERMISSIONS') === 'true' ||
+    //   this.configService.get<string>('NODE_ENV') === 'development';
 
     if (shouldSeed) {
       const defaultPermissions = [
