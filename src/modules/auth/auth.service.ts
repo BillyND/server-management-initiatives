@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
@@ -7,6 +12,7 @@ import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LoginDto } from '../users/dto/login.dto';
 import { DEFAULT_ROLE } from '../roles/roles.enum';
+import { ChangePasswordDto } from '../users/dto/change-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -136,5 +142,70 @@ export class AuthService {
     const { password: _, ...userWithoutPassword } = user;
 
     return userWithoutPassword;
+  }
+
+  async changePassword(email: string, changePasswordDto: ChangePasswordDto) {
+    // Check if user exists
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Validate current password
+    const isPasswordValid = await bcrypt.compare(
+      changePasswordDto.currentPassword,
+      user.password,
+    );
+    if (!isPasswordValid) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    // Validate new password is not the same as the current password
+    const isSamePassword = await bcrypt.compare(
+      changePasswordDto.newPassword,
+      user.password,
+    );
+    if (isSamePassword) {
+      throw new BadRequestException(
+        'New password must be different from current password',
+      );
+    }
+
+    // TODO: Validate the strength of the new password
+    // if (!this.isStrongPassword(changePasswordDto.newPassword)) {
+    //   throw new BadRequestException(
+    //     'Password must be at least 8 characters long and contain uppercase, lowercase, number and special character',
+    //   );
+    // }
+
+    // Hash and update the new password
+    const hashedPassword = await bcrypt.hash(changePasswordDto.newPassword, 10);
+    await this.usersService.updatePassword(email, {
+      password: hashedPassword,
+    });
+
+    // Logout from all devices (optional)
+    await this.usersService.updateRefreshToken(email, { refreshToken: null });
+
+    return {
+      message: 'Password changed successfully',
+      email: user.email,
+    };
+  }
+
+  private isStrongPassword(password: string): boolean {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    return (
+      password.length >= minLength &&
+      hasUpperCase &&
+      hasLowerCase &&
+      hasNumbers &&
+      hasSpecialChar
+    );
   }
 }

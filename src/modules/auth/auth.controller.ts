@@ -2,12 +2,11 @@ import {
   Body,
   Controller,
   Get,
-  HttpCode,
-  HttpStatus,
   Post,
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { ChangePasswordDto } from '../users/dto/change-password.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LoginDto } from '../users/dto/login.dto';
 import { AuthService } from './auth.service';
@@ -35,7 +34,6 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('verify-token')
-  @HttpCode(HttpStatus.OK)
   async verifyToken(@Request() req) {
     const accessToken = req.get('Authorization').replace('Bearer', '').trim();
     return await this.authService.verifyToken(accessToken);
@@ -43,11 +41,24 @@ export class AuthController {
 
   @Post('refresh-token')
   async refreshToken(
-    @Body() refreshTokenDto: { email: string; refreshToken: string },
+    @Request() req,
+    @Body() refreshTokenDto: { refreshToken: string },
   ) {
     return this.authService.refreshTokens(
-      refreshTokenDto.email,
+      req.user.email,
       refreshTokenDto.refreshToken,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('change-password')
+  async changePassword(
+    @Request() req,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    return await this.authService.changePassword(
+      req.user.email,
+      changePasswordDto,
     );
   }
 }
