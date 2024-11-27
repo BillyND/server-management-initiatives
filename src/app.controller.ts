@@ -20,5 +20,7 @@ export class AppController {
   async seed() {
     await this.permissionsService.seedDefaultPermissions();
     await this.rolesService.seedDefaultRoles();
+
+    return 'Seeded successfully!';
   }
 }

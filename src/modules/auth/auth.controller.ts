@@ -41,11 +41,10 @@ export class AuthController {
 
   @Post('refresh-token')
   async refreshToken(
-    @Request() req,
-    @Body() refreshTokenDto: { refreshToken: string },
+    @Body() refreshTokenDto: { refreshToken: string; email: string },
   ) {
     return this.authService.refreshTokens(
-      req.user.email,
+      refreshTokenDto.email,
       refreshTokenDto.refreshToken,
     );
   }

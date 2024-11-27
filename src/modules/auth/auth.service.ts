@@ -60,8 +60,10 @@ export class AuthService {
   async register(createUserDto: CreateUserDto) {
     try {
       const user = await this.usersService.create(createUserDto);
-      const defaultRole = await this.rolesService.findByName(DEFAULT_ROLE);
-      await this.usersService.assignRolesToUser(user.email, [defaultRole]);
+      const defaultRoleId = (await this.rolesService.findByName(DEFAULT_ROLE))
+        ?._id;
+
+      await this.usersService.assignRolesToUser(user.email, [defaultRoleId]);
 
       const tokens = await this.getTokens(user.email);
       await this.usersService.updateRefreshToken(user.email, {
@@ -69,12 +71,8 @@ export class AuthService {
       });
 
       return {
-        ...tokens,
-        user: {
-          email: user.email,
-          name: user.name,
-          roles: [defaultRole],
-        },
+        success: true,
+        message: 'User registered successfully',
       };
     } catch (error) {
       throw error;
@@ -87,16 +85,34 @@ export class AuthService {
   }
 
   async refreshTokens(email: string, refreshToken: string) {
+    // Check if user and refresh token exist
     const user = await this.usersService.findByEmail(email);
     if (!user || !user.refreshToken) {
       throw new UnauthorizedException('Access Denied');
     }
 
+    // Check if refresh token matches
     const refreshTokenMatches = user.refreshToken === refreshToken;
     if (!refreshTokenMatches) {
       throw new UnauthorizedException('Access Denied');
     }
 
+    // Verify refresh token is valid and not expired
+    try {
+      await this.jwtService.verifyAsync(refreshToken, {
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+      });
+    } catch (error) {
+      // If token expired or invalid, delete refresh token in DB
+      await this.usersService.updateRefreshToken(user.email, {
+        refreshToken: null,
+      });
+      throw new UnauthorizedException(
+        'Refresh token expired or invalid: ' + error,
+      );
+    }
+
+    // Create new pair of tokens
     const tokens = await this.getTokens(user.email);
     await this.usersService.updateRefreshToken(user.email, {
       refreshToken: tokens.refreshToken,

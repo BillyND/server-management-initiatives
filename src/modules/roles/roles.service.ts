@@ -1,21 +1,18 @@
 import {
+  BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
-  ConflictException,
-  BadRequestException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Role, RoleDocument } from './schemas/role.schema';
-import { CreateRoleDto } from './dto/create-role.dto';
-import { UpdateRoleDto } from './dto/update-role.dto';
+import { PERMISSIONS } from '../permissions/permissions.constants';
 import { PermissionsService } from '../permissions/permissions.service';
 import { AssignPermissionsDto } from './dto/assign-permissions.dto';
+import { CreateRoleDto } from './dto/create-role.dto';
+import { UpdateRoleDto } from './dto/update-role.dto';
 import { ROLES } from './roles.enum';
-import { PERMISSIONS } from '../permissions/permissions.constants';
-// import { ROLES } from './roles.enum';
-// import { PERMISSIONS } from '../permissions/permissions.constants';
-// import { ConfigService } from '@nestjs/config';
+import { Role, RoleDocument } from './schemas/role.schema';
 
 @Injectable()
 export class RolesService {
@@ -85,17 +82,17 @@ export class RolesService {
   /**
    * Find a role by name
    */
-  async findByName(name: string): Promise<Role> {
+  async findByName(name: string): Promise<Role & { _id: string }> {
     const role = await this.roleModel
       .findOne({ name })
       .populate('permissions')
-      .exec();
+      .lean();
 
     if (!role) {
       throw new NotFoundException(`Role with name ${name} not found`);
     }
 
-    return role;
+    return role as unknown as Role & { _id: string };
   }
 
   /**
@@ -256,6 +253,8 @@ export class RolesService {
           PERMISSIONS.ROLES.CREATE,
           PERMISSIONS.ROLES.UPDATE,
           PERMISSIONS.ROLES.MANAGE,
+          PERMISSIONS.ROLES.DELETE,
+          PERMISSIONS.ROLES.READ_ALL,
         ].includes(p.name),
       )
       .map((p: any) => p?._id);

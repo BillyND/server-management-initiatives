@@ -40,16 +40,6 @@ export class UsersController {
     return userWithoutPassword;
   }
 
-  @Put(':email/roles')
-  @UseGuards(JwtAuthGuard, PermissionGuard)
-  @RequirePermissions(PERMISSIONS.USERS.MANAGE)
-  async assignRoles(
-    @Param('email') email: string,
-    @Body() assignRolesDto: AssignRolesDto,
-  ) {
-    return this.usersService.assignRolesToUser(email, assignRolesDto.roles);
-  }
-
   @Get(':email/permissions')
   @UseGuards(JwtAuthGuard, PermissionGuard)
   @RequirePermissions(PERMISSIONS.USERS.READ)
@@ -103,5 +93,15 @@ export class UsersController {
   ) {
     await this.userModel.updateOne({ email }, updateUserDto);
     return this.usersService.findByEmail(email);
+  }
+
+  @Put(':email/roles')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @RequirePermissions(PERMISSIONS.USERS.MANAGE)
+  async assignRoles(
+    @Param('email') email: string,
+    @Body() assignRolesDto: AssignRolesDto,
+  ) {
+    return this.usersService.assignRolesToUser(email, assignRolesDto.roleIds);
   }
 }

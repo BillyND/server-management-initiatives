@@ -11,8 +11,9 @@ export const PERMISSIONS = {
     MANAGE: 'users.manage',
   },
   ROLES: {
-    CREATE: 'roles.create',
     READ: 'roles.read',
+    READ_ALL: 'roles.read_all',
+    CREATE: 'roles.create',
     UPDATE: 'roles.update',
     DELETE: 'roles.delete',
     MANAGE: 'roles.manage',

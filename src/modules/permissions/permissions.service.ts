@@ -135,6 +135,10 @@ export class PermissionsService {
       { name: PERMISSIONS.ROLES.UPDATE, description: 'Update roles' },
       { name: PERMISSIONS.ROLES.DELETE, description: 'Delete roles' },
       {
+        name: PERMISSIONS.ROLES.READ_ALL,
+        description: 'Read all roles',
+      },
+      {
         name: PERMISSIONS.ROLES.MANAGE,
         description: 'Manage role permissions',
       },

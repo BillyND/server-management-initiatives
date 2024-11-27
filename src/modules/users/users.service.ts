@@ -17,10 +17,14 @@ import {
 } from './dto/update-user.dto';
 import { IUser } from './interfaces/user.interface';
 import { User, UserDocument } from './schemas/user.schema';
+import { RolesService } from '../roles/roles.service';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private rolesService: RolesService,
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const existingUser = await this.userModel
@@ -49,12 +53,6 @@ export class UsersService {
     });
   }
 
-  /**
-   * Find a user by email and return with mapped role names
-   * @param email User's email address
-   * @returns User object with roles mapped to role names
-   * @throws NotFoundException if user not found
-   */
   async findByEmail(email: string): Promise<IUser> {
     const user = await this.userModel
       .findOne({ email })
@@ -84,36 +82,6 @@ export class UsersService {
     };
   }
 
-  async updateRefreshToken(
-    email: string,
-    updateRefreshTokenUserDto: UpdateRefreshTokenUserDto,
-  ) {
-    return this.userModel.findOneAndUpdate(
-      { email },
-      { refreshToken: updateRefreshTokenUserDto.refreshToken },
-      { new: true },
-    );
-  }
-
-  async updatePassword(
-    email: string,
-    updatePasswordUserDto: UpdatePasswordUserDto,
-  ) {
-    return this.userModel.findOneAndUpdate(
-      { email },
-      { password: updatePasswordUserDto.password },
-      { new: true },
-    );
-  }
-
-  async updateProfile(
-    email: string,
-    updateProfileDto: UpdateProfileDto,
-  ): Promise<IUser> {
-    await this.userModel.updateOne({ email }, updateProfileDto);
-    return await this.findByEmail(email);
-  }
-
   async findByEmailWithRoles(email: string): Promise<User> {
     const user = await this.userModel
       .findOne({ email })
@@ -127,29 +95,6 @@ export class UsersService {
 
     if (!user) {
       throw new NotFoundException('User not found');
-    }
-
-    return user;
-  }
-
-  async assignRolesToUser(email: string, roles: Role[]): Promise<User> {
-    const user = await this.userModel
-      .findOneAndUpdate(
-        {
-          email,
-        },
-        { $set: { roles } },
-        { new: true },
-      )
-      .populate({
-        path: 'roles',
-        populate: {
-          path: 'permissions',
-        },
-      });
-
-    if (!user) {
-      throw new NotFoundException(`User #${email} not found`);
     }
 
     return user;
@@ -224,5 +169,60 @@ export class UsersService {
       ],
       [],
     );
+  }
+
+  async updateRefreshToken(
+    email: string,
+    updateRefreshTokenUserDto: UpdateRefreshTokenUserDto,
+  ) {
+    return this.userModel.findOneAndUpdate(
+      { email },
+      { refreshToken: updateRefreshTokenUserDto.refreshToken },
+      { new: true },
+    );
+  }
+
+  async updatePassword(
+    email: string,
+    updatePasswordUserDto: UpdatePasswordUserDto,
+  ) {
+    return this.userModel.findOneAndUpdate(
+      { email },
+      { password: updatePasswordUserDto.password },
+      { new: true },
+    );
+  }
+
+  async updateProfile(
+    email: string,
+    updateProfileDto: UpdateProfileDto,
+  ): Promise<IUser> {
+    await this.userModel.updateOne({ email }, updateProfileDto);
+    return await this.findByEmail(email);
+  }
+
+  async assignRolesToUser(email: string, roleIds: string[]): Promise<IUser> {
+    const roles = roleIds?.length
+      ? await this.rolesService.findByIds(roleIds)
+      : [];
+
+    if (!roles?.length) {
+      throw new NotFoundException('Roles not found');
+    }
+
+    await this.userModel.updateOne(
+      {
+        email,
+      },
+      { $set: { roles } },
+    );
+
+    const user = await this.findByEmail(email);
+
+    if (!user) {
+      throw new NotFoundException(`User #${email} not found`);
+    }
+
+    return user;
   }
 }
