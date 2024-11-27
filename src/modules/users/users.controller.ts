@@ -9,18 +9,17 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '../auth/guards/permission.guard';
+import { PERMISSIONS } from '../permissions/permissions.constants';
 import { AssignRolesDto } from './dto/assign-roles.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { User, UserDocument } from './schemas/user.schema';
 import { UsersService } from './users.service';
-import { PERMISSIONS } from '../permissions/permissions.constants';
-import { User } from './schemas/user.schema';
-import { UserDocument } from './schemas/user.schema';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 
 @Controller('users')
 export class UsersController {
